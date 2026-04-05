@@ -27,8 +27,8 @@ type DeviceState struct {
 	HasHeartbeat      bool
 	UniqueMinuteCount int
 	SeenMinutes       map[int64]struct{}
-	UploadCount int64
-	UploadTotal time.Duration
+	UploadCount       int64
+	UploadTotal       time.Duration
 }
 
 /*
@@ -36,8 +36,8 @@ DeviceService stores device telemetry state in memory and exposes business opera
 used by the device HTTP handler.
 */
 type DeviceService struct {
-	registry   *registry.Registry
-	mu         sync.RWMutex
+	registry *registry.Registry
+	mu       sync.RWMutex
 	devices  map[string]*DeviceState
 }
 
@@ -60,7 +60,7 @@ The registry contains the list of valid devices loaded from the CSV file during 
 func NewDeviceService(deviceRegistry *registry.Registry) *DeviceService {
 	// Create an empty in-memory heartbeat store for known devices.
 	return &DeviceService{
-		registry:   deviceRegistry,
+		registry: deviceRegistry,
 		devices:  make(map[string]*DeviceState),
 	}
 }
@@ -95,16 +95,16 @@ func (s *DeviceService) RecordHeartbeat(deviceID string, sentAt time.Time) error
 
 	if _, exists := device.SeenMinutes[minute]; !exists {
 		device.SeenMinutes[minute] = struct{}{}
-        device.UniqueMinuteCount++
+		device.UniqueMinuteCount++
 
-        if !device.HasHeartbeat || minute < device.FirstMinute {
-            device.FirstMinute = minute
-        }
-        if !device.HasHeartbeat || minute > device.LastMinute {
-            device.LastMinute = minute
-        }
+		if !device.HasHeartbeat || minute < device.FirstMinute {
+			device.FirstMinute = minute
+		}
+		if !device.HasHeartbeat || minute > device.LastMinute {
+			device.LastMinute = minute
+		}
 
-        device.HasHeartbeat = true
+		device.HasHeartbeat = true
 	}
 
 	return nil
@@ -193,11 +193,11 @@ func (s *DeviceService) GetStats(deviceID string) (DeviceStats, error) {
 
 	// Check if the device has any heartbeat data. If not, return zero uptime and the placeholder upload time.
 	if device == nil || !device.HasHeartbeat {
-        return DeviceStats{
-            Uptime:        0,
-            AvgUploadTime: avgUploadTime,
-        }, nil
-    }
+		return DeviceStats{
+			Uptime:        0,
+			AvgUploadTime: avgUploadTime,
+		}, nil
+	}
 
 	// Handle the edge case of a single heartbeat minute to avoid division by zero and return 100% uptime.
 	if device.FirstMinute == device.LastMinute {

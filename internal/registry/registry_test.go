@@ -6,7 +6,8 @@ import (
 	"testing"
 )
 
-/**
+/*
+*
 TestLoadRegistryFromCSV loads a valid CSV file and verifies that
 the registry contains the expected unique device IDs.
 */
@@ -44,7 +45,8 @@ func TestLoadRegistryFromCSV(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestLoadRegistryFromCSV_ReturnsErrorForMissingFile verifies that startup fails
 when the configured CSV file path does not exist.
 */
@@ -63,7 +65,8 @@ func TestLoadRegistryFromCSV_ReturnsErrorForMissingFile(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestLoadRegistryFromCSV_ReturnsErrorForEmptyPath verifies that empty paths
 are rejected before any file access is attempted.
 */
@@ -82,7 +85,8 @@ func TestLoadRegistryFromCSV_ReturnsErrorForEmptyPath(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestLoadRegistryFromCSV_ReturnsErrorForEmptyCSV verifies that files without any
 usable device IDs are rejected during startup.
 */
@@ -104,7 +108,8 @@ func TestLoadRegistryFromCSV_ReturnsErrorForEmptyCSV(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestRegistryHas_ReturnsFalseForNilReceiver verifies that the registry helper
 is safe to call even when the receiver is nil.
 */
@@ -118,7 +123,8 @@ func TestRegistryHas_ReturnsFalseForNilReceiver(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestRegistryCount_ReturnsZeroForNilReceiver verifies that the registry helper
 is safe to call even when the receiver is nil.
 */
@@ -132,7 +138,8 @@ func TestRegistryCount_ReturnsZeroForNilReceiver(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 writeDevicesCSVFile creates a temporary CSV file for registry tests.
 
 The helper writes the provided contents to disk and returns the generated path.

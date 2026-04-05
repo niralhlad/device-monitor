@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/niralhlad/device-monitor/internal/services"
 	"github.com/niralhlad/device-monitor/internal/registry"
+	"github.com/niralhlad/device-monitor/internal/services"
 )
 
 /*

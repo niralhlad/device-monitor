@@ -5,8 +5,8 @@ const (
 
 	APIV1BasePath = "/api/v1"
 
-	DevicesPath = "/devices"
+	DevicesPath   = "/devices"
 	DeviceIDParam = "/{device_id}"
 	HeartbeatPath = "/heartbeat"
-	StatsPath = "/stats"
+	StatsPath     = "/stats"
 )

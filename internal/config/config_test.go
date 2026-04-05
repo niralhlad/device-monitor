@@ -71,7 +71,7 @@ The test confirms that all provided values override the defaults correctly.
 func TestLoadFromEnv_OverridesOnlyProvidedValues(t *testing.T) {
 	// Build a test environment with explicit overrides.
 	env := map[string]string{
-		"SERVICE_NAME": 	"fleet-api",
+		"SERVICE_NAME":     "fleet-api",
 		"ENVIRONMENT":      "production",
 		"HTTP_PORT":        "8080",
 		"LOG_LEVEL":        "debug",

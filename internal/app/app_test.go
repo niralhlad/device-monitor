@@ -125,7 +125,8 @@ func TestLoad_BuildsHealthRouteUsingEnvironmentValues(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 TestLoad_ReturnsErrorWhenDevicesCSVIsMissing verifies that bootstrap fails
 when the configured devices CSV file does not exist.
 */
@@ -170,7 +171,8 @@ func clearAppEnv(t *testing.T) {
 	}
 }
 
-/**
+/*
+*
 writeDevicesCSVFile creates a temporary devices CSV file for application bootstrap tests.
 
 The helper writes the provided contents to disk and returns the generated file path.

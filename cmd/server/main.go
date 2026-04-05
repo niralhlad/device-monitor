@@ -10,7 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	
+
 	"github.com/joho/godotenv"
 
 	"github.com/niralhlad/device-monitor/internal/app"
@@ -65,8 +65,8 @@ func main() {
 	}()
 
 	logger.Info(
-		"server starting", 
-		"URL", "http://localhost" + application.Settings.Address(),
+		"server starting",
+		"URL", "http://localhost"+application.Settings.Address(),
 	)
 
 	// Start serving traffic and treat unexpected server failures as fatal.

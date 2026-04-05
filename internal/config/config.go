@@ -14,11 +14,11 @@ This structure contains the core configuration values required to start
 and run the application in different environments.
 */
 type Settings struct {
-	ServiceName string
-	Environment string
-	HTTPPort    string
-	LogLevel    string
-	LogFormat   string
+	ServiceName    string
+	Environment    string
+	HTTPPort       string
+	LogLevel       string
+	LogFormat      string
 	DevicesCSVPath string
 }
 
@@ -31,11 +31,11 @@ the service to start with minimal environment setup.
 func DefaultSettings() Settings {
 	// Return the default application configuration values.
 	return Settings{
-		ServiceName: "device-monitor",
-		Environment: "local",
-		HTTPPort:    "6733",
-		LogLevel:    "info",
-		LogFormat:   "json",
+		ServiceName:    "device-monitor",
+		Environment:    "local",
+		HTTPPort:       "6733",
+		LogLevel:       "info",
+		LogFormat:      "json",
 		DevicesCSVPath: "data/devices.csv",
 	}
 }

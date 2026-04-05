@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
-	"github.com/niralhlad/device-monitor/internal/handlers"
 	"github.com/niralhlad/device-monitor/internal/constants"
+	"github.com/niralhlad/device-monitor/internal/handlers"
 )
 
 /*

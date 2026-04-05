@@ -1,11 +1,11 @@
 package app
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"strings"
-	"fmt"
 
 	appconfig "github.com/niralhlad/device-monitor/internal/config"
 	"github.com/niralhlad/device-monitor/internal/handlers"
@@ -21,9 +21,9 @@ Keeping these dependencies together makes the application startup flow
 easy to manage and keeps the main entrypoint small.
 */
 type Application struct {
-	Settings appconfig.Settings
-	Logger   *slog.Logger
-	Handler  http.Handler
+	Settings       appconfig.Settings
+	Logger         *slog.Logger
+	Handler        http.Handler
 	DeviceRegistry *registry.Registry
 }
 
@@ -58,7 +58,6 @@ func Load() (*Application, error) {
 		"count", deviceRegistry.Count(),
 	)
 
-
 	// Create the HTTP handlers used by the API routes.
 	healthHandler := handlers.NewHealthHandler(settings.ServiceName, settings.Environment)
 
@@ -76,9 +75,9 @@ func Load() (*Application, error) {
 
 	// Return the fully constructed application.
 	return &Application{
-		Settings: settings,
-		Logger:   logger,
-		Handler:  router,
+		Settings:       settings,
+		Logger:         logger,
+		Handler:        router,
 		DeviceRegistry: deviceRegistry,
 	}, nil
 }

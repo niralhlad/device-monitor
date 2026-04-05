@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/niralhlad/device-monitor/internal/http/response"
 	"github.com/niralhlad/device-monitor/internal/services"
@@ -30,7 +30,7 @@ deviceUploadStatsRequest defines the request body expected by the upload stats e
 */
 type deviceUploadStatsRequest struct {
 	SentAt     *string `json:"sent_at"`
-	UploadTime int64     `json:"upload_time"`
+	UploadTime int64   `json:"upload_time"`
 }
 
 /*
@@ -87,7 +87,6 @@ func (h *DeviceHandler) HandleHeartbeat(w http.ResponseWriter, r *http.Request) 
 	// Return a successful no-content response when the heartbeat is recorded.
 	response.WriteNoContent(w)
 }
-
 
 /*
 HandleGetStats returns the current calculated statistics for the requested device.

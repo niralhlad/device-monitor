@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-/**
+/*
+*
 Registry stores the set of valid device IDs loaded during application startup.
 
 The registry is read-only after creation and is used to validate that incoming
@@ -19,7 +20,8 @@ type Registry struct {
 	deviceIDs map[string]struct{}
 }
 
-/**
+/*
+*
 LoadRegistryFromCSV reads device definitions from a CSV file and builds an in-memory registry.
 
 The function expects a single device ID column. It supports an optional header row,
@@ -89,7 +91,8 @@ func LoadRegistryFromCSV(path string) (*Registry, error) {
 	}, nil
 }
 
-/**
+/*
+*
 Has reports whether the provided device ID exists in the registry.
 
 This method is used by request handlers and future stores to verify that
@@ -106,7 +109,8 @@ func (r *Registry) Has(deviceID string) bool {
 	return ok
 }
 
-/**
+/*
+*
 Count returns the total number of unique device IDs in the registry.
 
 This helper is useful during startup logs and unit tests.

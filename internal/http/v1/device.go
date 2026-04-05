@@ -23,7 +23,7 @@ func registerDeviceRoutes(mux *http.ServeMux, deviceHandler *handlers.DeviceHand
 	}
 
 	// Construct the full base path for device-related endpoints by combining the version base path with the device resource path.
-	deviceBasePath := constants.APIV1BasePath + constants.DevicesPath 
+	deviceBasePath := constants.APIV1BasePath + constants.DevicesPath
 
 	// Construct the path for the device ID parameter.
 	deviceIDPath := deviceBasePath + constants.DeviceIDParam
@@ -61,7 +61,7 @@ func registerDeviceRoutes(mux *http.ServeMux, deviceHandler *handlers.DeviceHand
 	* {
 	*   "msg": "internal server error"
 	* }
-	*/
+	 */
 	mux.HandleFunc("POST "+deviceIDPath+"/heartbeat", deviceHandler.HandleHeartbeat)
 
 	/**
@@ -93,7 +93,7 @@ func registerDeviceRoutes(mux *http.ServeMux, deviceHandler *handlers.DeviceHand
 	* {
 	*   "msg": "internal server error"
 	* }
-	*/
+	 */
 	mux.HandleFunc("GET "+deviceIDPath+"/stats", deviceHandler.HandleGetStats)
 
 	/**
@@ -132,6 +132,6 @@ func registerDeviceRoutes(mux *http.ServeMux, deviceHandler *handlers.DeviceHand
 	* {
 	*   "msg": "internal server error"
 	* }
-	*/
+	 */
 	mux.HandleFunc("POST "+deviceIDPath+"/stats", deviceHandler.HandlePostStats)
 }
