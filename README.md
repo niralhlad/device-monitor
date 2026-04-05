@@ -1,5 +1,5 @@
 # device-monitor
-A small Go HTTP service that loads device IDs from `devices.csv`, accepts heartbeat and upload telemetry, and returns per-device uptime and average upload duration.
+A small Go HTTP service that loads device IDs from `devices.csv`, accepts device heartbeat and upload telemetry, and returns per-device uptime and average upload duration statistics.
 
 ## High-level design
 
@@ -16,6 +16,7 @@ A small Go HTTP service that loads device IDs from `devices.csv`, accepts heartb
 - `GET /health` : Get the health status of the server.
 - `POST /api/v1/devices/{device_id}/heartbeat` : Register a heartbeat for a known device.
 - `GET /api/v1/devices/{device_id}/stats` : Return current device uptime statistics.
+- `POST /api/v1/devices/{device_id}/stats` : Register upload telemetry for a known device.
 
 ## Local run
 

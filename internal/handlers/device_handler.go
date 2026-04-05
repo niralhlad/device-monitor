@@ -5,10 +5,18 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"strings"
 
 	"github.com/niralhlad/device-monitor/internal/http/response"
 	"github.com/niralhlad/device-monitor/internal/services"
 )
+
+/*
+DeviceHandler serves HTTP endpoints related to device telemetry ingestion.
+*/
+type DeviceHandler struct {
+	deviceService *services.DeviceService
+}
 
 /*
 heartbeatRequest defines the request body expected by the heartbeat endpoint.
@@ -18,10 +26,11 @@ type heartbeatRequest struct {
 }
 
 /*
-DeviceHandler serves HTTP endpoints related to device telemetry ingestion.
+deviceUploadStatsRequest defines the request body expected by the upload stats endpoint.
 */
-type DeviceHandler struct {
-	deviceService *services.DeviceService
+type deviceUploadStatsRequest struct {
+	SentAt     *string `json:"sent_at"`
+	UploadTime int64     `json:"upload_time"`
 }
 
 /*
@@ -107,4 +116,48 @@ func (h *DeviceHandler) HandleGetStats(w http.ResponseWriter, r *http.Request) {
 		Uptime:        stats.Uptime,
 		AvgUploadTime: stats.AvgUploadTime,
 	})
+}
+
+/*
+HandlePostStats validates the request payload and stores upload telemetry for the given device.
+
+The endpoint aggregates upload durations in memory and returns HTTP 204 on success.
+*/
+func (h *DeviceHandler) HandlePostStats(w http.ResponseWriter, r *http.Request) {
+	// Read the device ID path parameter from the request URL.
+	deviceID := r.PathValue("device_id")
+
+	// Decode the JSON request body into the upload stats request shape.
+	var req deviceUploadStatsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		println("POST /stats decode error:", err.Error())
+		response.WriteBadRequest(w, "invalid request body")
+		return
+	}
+
+	if req.SentAt == nil || strings.TrimSpace(*req.SentAt) == "" {
+		response.WriteBadRequest(w, "sent_at is required")
+		return
+	}
+
+	// Reject negative upload durations.
+	if req.UploadTime < 0 {
+		println("POST /stats negative upload_time")
+		response.WriteBadRequest(w, "upload_time must be non-negative")
+		return
+	}
+
+	// Store the upload stat in the device service.
+	if err := h.deviceService.RecordUploadStat(deviceID, req.UploadTime); err != nil {
+		if errors.Is(err, services.ErrDeviceNotFound) {
+			response.WriteNotFound(w, "device not found")
+			return
+		}
+
+		response.WriteInternalServerError(w)
+		return
+	}
+
+	// Return a successful no-content response when the upload stat is recorded.
+	response.WriteNoContent(w)
 }

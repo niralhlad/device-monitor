@@ -106,3 +106,36 @@ func TestRegisterDeviceRoutes_RegistersStatsRoute(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
 	}
 }
+
+/*
+TestRegisterDeviceRoutes_RegistersPostStatsRoute verifies that the version 1 router
+registers the upload stats endpoint successfully.
+*/
+func TestRegisterDeviceRoutes_RegistersPostStatsRoute(t *testing.T) {
+	// Create a new HTTP mux for the route registration test.
+	mux := http.NewServeMux()
+
+	// Create a device handler with a valid service dependency.
+	deviceHandler := handlers.NewDeviceHandler(
+		services.NewDeviceService(registry.NewForTest([]string{"device-1"})),
+	)
+
+	// Register the version 1 device routes.
+	registerDeviceRoutes(mux, deviceHandler)
+
+	// Create a valid upload stats request to the registered route.
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/api/v1/devices/device-1/stats",
+		strings.NewReader(`{"sent_at":"2026-04-05T12:00:10Z","upload_time":60000000000}`),
+	)
+
+	// Execute the request against the mux.
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	// Verify that the route was registered and handled successfully.
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusNoContent)
+	}
+}

@@ -95,4 +95,43 @@ func registerDeviceRoutes(mux *http.ServeMux, deviceHandler *handlers.DeviceHand
 	* }
 	*/
 	mux.HandleFunc("GET "+deviceIDPath+"/stats", deviceHandler.HandleGetStats)
+
+	/**
+	* @api {post} /api/v1/devices/{device_id}/stats Register device upload statistics
+	* @apiName RegisterDeviceUploadStatistics
+	* @apiGroup Devices
+	* @apiDescription Register upload telemetry for a known device.
+	*
+	* @apiParam {String} device_id ID of the device.
+	*
+	* @apiBody {String} sent_at Timestamp included in the upload telemetry payload.
+	* @apiBody {Number} upload_time Upload duration in nanoseconds.
+	*
+	* @apiBodyExample {json} Request-Body-Example
+	* {
+	*   "sent_at": "0001-01-01T00:00:00Z",
+	*   "upload_time": 60000000000
+	* }
+	*
+	* @apiSuccess (204) NoContent The upload telemetry was recorded successfully.
+	*
+	* @apiErrorExample {json} BadRequest
+	* HTTP/1.1 400 Bad Request
+	* {
+	*   "msg": "invalid request body"
+	* }
+	*
+	* @apiErrorExample {json} DeviceNotFound
+	* HTTP/1.1 404 Not Found
+	* {
+	*   "msg": "device not found"
+	* }
+	*
+	* @apiErrorExample {json} InternalServerError
+	* HTTP/1.1 500 Internal Server Error
+	* {
+	*   "msg": "internal server error"
+	* }
+	*/
+	mux.HandleFunc("POST "+deviceIDPath+"/stats", deviceHandler.HandlePostStats)
 }

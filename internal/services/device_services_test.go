@@ -219,19 +219,82 @@ func TestRecordHeartbeat_UpdatesFirstAndLastMinute(t *testing.T) {
 }
 
 /*
-TestGetStats_TwoConsecutiveHeartbeatMinutesReturnHundred verifies that two consecutive
-heartbeat minutes produce 100 percent uptime.
+TestRecordUploadStat stores an upload duration for a known device successfully.
 */
-func TestGetStats_TwoConsecutiveHeartbeatMinutesReturnHundred(t *testing.T) {
+func TestRecordUploadStat(t *testing.T) {
 	// Create a device service with one valid device.
 	service := NewDeviceService(registry.NewForTest([]string{"device-1"}))
 
-	// Record two consecutive heartbeat minutes.
-	if err := service.RecordHeartbeat("device-1", time.Date(2026, 4, 1, 10, 30, 1, 0, time.UTC)); err != nil {
-		t.Fatalf("first RecordHeartbeat() error = %v", err)
+	// Record an upload stat for the valid device.
+	err := service.RecordUploadStat("device-1", int64(time.Minute))
+	if err != nil {
+		t.Fatalf("RecordUploadStat() error = %v", err)
 	}
-	if err := service.RecordHeartbeat("device-1", time.Date(2026, 4, 1, 10, 31, 1, 0, time.UTC)); err != nil {
-		t.Fatalf("second RecordHeartbeat() error = %v", err)
+
+	// Verify that the device state was created and updated correctly.
+	device := service.devices["device-1"]
+	if device == nil {
+		t.Fatal("expected device state, got nil")
+	}
+	if device.UploadCount != 1 {
+		t.Fatalf("UploadCount = %d, want %d", device.UploadCount, 1)
+	}
+	if device.UploadTotal != time.Minute {
+		t.Fatalf("UploadTotal = %v, want %v", device.UploadTotal, time.Minute)
+	}
+}
+
+/*
+TestRecordUploadStat_ReturnsErrorForUnknownDevice verifies that upload stats for devices
+not present in the registry are rejected.
+*/
+func TestRecordUploadStat_ReturnsErrorForUnknownDevice(t *testing.T) {
+	// Create a device service with one valid device.
+	service := NewDeviceService(registry.NewForTest([]string{"device-1"}))
+
+	// Attempt to record an upload stat for an unknown device.
+	err := service.RecordUploadStat("missing-device", int64(time.Minute))
+
+	// Verify that the service rejects unknown device IDs.
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if err != ErrDeviceNotFound {
+		t.Fatalf("error = %v, want %v", err, ErrDeviceNotFound)
+	}
+}
+
+/*
+TestRecordUploadStat_ReturnsErrorForNegativeUploadTime verifies that negative upload
+durations are rejected.
+*/
+func TestRecordUploadStat_ReturnsErrorForNegativeUploadTime(t *testing.T) {
+	// Create a device service with one valid device.
+	service := NewDeviceService(registry.NewForTest([]string{"device-1"}))
+
+	// Attempt to record a negative upload duration.
+	err := service.RecordUploadStat("device-1", -1)
+
+	// Verify that the service rejects invalid upload durations.
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+/*
+TestGetStats_ReturnsAverageUploadTime verifies that the service returns the average
+of the recorded upload durations.
+*/
+func TestGetStats_ReturnsAverageUploadTime(t *testing.T) {
+	// Create a device service with one valid device.
+	service := NewDeviceService(registry.NewForTest([]string{"device-1"}))
+
+	// Record two upload durations for the device.
+	if err := service.RecordUploadStat("device-1", int64(time.Minute)); err != nil {
+		t.Fatalf("first RecordUploadStat() error = %v", err)
+	}
+	if err := service.RecordUploadStat("device-1", int64(2*time.Minute)); err != nil {
+		t.Fatalf("second RecordUploadStat() error = %v", err)
 	}
 
 	// Read the calculated device stats.
@@ -240,8 +303,8 @@ func TestGetStats_TwoConsecutiveHeartbeatMinutesReturnHundred(t *testing.T) {
 		t.Fatalf("GetStats() error = %v", err)
 	}
 
-	// Verify the uptime calculation.
-	if stats.Uptime != 100 {
-		t.Fatalf("Uptime = %v, want %v", stats.Uptime, 100.0)
+	// Verify the average upload duration.
+	if stats.AvgUploadTime != "1m30s" {
+		t.Fatalf("AvgUploadTime = %q, want %q", stats.AvgUploadTime, "1m30s")
 	}
 }

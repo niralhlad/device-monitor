@@ -27,6 +27,8 @@ type DeviceState struct {
 	HasHeartbeat      bool
 	UniqueMinuteCount int
 	SeenMinutes       map[int64]struct{}
+	UploadCount int64
+	UploadTotal time.Duration
 }
 
 /*
@@ -109,6 +111,42 @@ func (s *DeviceService) RecordHeartbeat(deviceID string, sentAt time.Time) error
 }
 
 /*
+RecordUploadStat validates the device ID and stores an upload duration for the device.
+
+The sentAt value is accepted as part of the endpoint contract, but the current
+implementation only aggregates upload duration statistics.
+*/
+func (s *DeviceService) RecordUploadStat(deviceID string, uploadTime int64) error {
+	// Reject unknown device IDs before storing any data.
+	if s.registry == nil || !s.registry.Has(deviceID) {
+		return ErrDeviceNotFound
+	}
+
+	// Reject invalid upload durations.
+	if uploadTime < 0 {
+		return errors.New("upload_time must be non-negative")
+	}
+
+	// Lock the service before mutating in-memory upload state.
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Create the per-device state on first use.
+	if s.devices[deviceID] == nil {
+		s.devices[deviceID] = &DeviceState{
+			SeenMinutes: make(map[int64]struct{}),
+		}
+	}
+
+	// Update the aggregated upload metrics.
+	device := s.devices[deviceID]
+	device.UploadCount++
+	device.UploadTotal += time.Duration(uploadTime)
+
+	return nil
+}
+
+/*
 HeartbeatCount returns the number of unique heartbeat minutes stored for the device.
 
 This helper is mainly used by tests in the current commit.
@@ -147,11 +185,17 @@ func (s *DeviceService) GetStats(deviceID string) (DeviceStats, error) {
 	// Read the unique heartbeat minute buckets stored for the device.
 	device := s.devices[deviceID]
 
+	// Calculate the average upload time if there are any recorded uploads.
+	avgUploadTime := "0s"
+	if device != nil && device.UploadCount > 0 {
+		avgUploadTime = (device.UploadTotal / time.Duration(device.UploadCount)).String()
+	}
+
 	// Check if the device has any heartbeat data. If not, return zero uptime and the placeholder upload time.
 	if device == nil || !device.HasHeartbeat {
         return DeviceStats{
             Uptime:        0,
-            AvgUploadTime: "0s",
+            AvgUploadTime: avgUploadTime,
         }, nil
     }
 
@@ -159,17 +203,17 @@ func (s *DeviceService) GetStats(deviceID string) (DeviceStats, error) {
 	if device.FirstMinute == device.LastMinute {
 		return DeviceStats{
 			Uptime:        100,
-			AvgUploadTime: "0s",
+			AvgUploadTime: avgUploadTime,
 		}, nil
 	}
 
 	// Calculate uptime for the device
-	totalMinutes := device.LastMinute - device.FirstMinute + 1
+	totalMinutes := device.LastMinute - device.FirstMinute
 	uptime := (float64(device.UniqueMinuteCount) / float64(totalMinutes)) * 100
 
 	// Return the calculated stats.
 	return DeviceStats{
 		Uptime:        uptime,
-		AvgUploadTime: "0s",
+		AvgUploadTime: avgUploadTime,
 	}, nil
 }
