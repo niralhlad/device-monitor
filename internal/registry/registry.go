@@ -120,3 +120,24 @@ func (r *Registry) Count() int {
 	// Return the number of registered device IDs.
 	return len(r.deviceIDs)
 }
+
+/*
+NewForTest creates a registry directly from a list of device IDs.
+
+This helper is used by unit tests that need a small in-memory registry without
+creating a temporary CSV file on disk.
+*/
+func NewForTest(deviceIDs []string) *Registry {
+	// Allocate the registry map.
+	items := make(map[string]struct{}, len(deviceIDs))
+
+	// Add each provided device ID to the registry map.
+	for _, deviceID := range deviceIDs {
+		items[strings.TrimSpace(deviceID)] = struct{}{}
+	}
+
+	// Return the constructed registry.
+	return &Registry{
+		deviceIDs: items,
+	}
+}

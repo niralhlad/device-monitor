@@ -6,6 +6,7 @@ import (
 
 	appconfig "github.com/niralhlad/device-monitor/internal/config"
 	"github.com/niralhlad/device-monitor/internal/handlers"
+	"github.com/niralhlad/device-monitor/internal/http/v1"
 )
 
 // Dependencies captures the collaborators required to build the HTTP router.
@@ -13,6 +14,7 @@ type Dependencies struct {
 	Settings      appconfig.Settings
 	Logger        *slog.Logger
 	HealthHandler *handlers.HealthHandler
+	DeviceHandler *handlers.DeviceHandler
 }
 
 /*
@@ -32,9 +34,15 @@ func NewRouter(dependencies Dependencies) stdhttp.Handler {
 	if dependencies.Logger == nil {
 		panic("http NewRouter: nil logger")
 	}
+	if dependencies.DeviceHandler == nil {
+		panic("http NewRouter: nil deviceHandler")
+	}
 
 	// Register all root-level routes.
 	registerHealthRoutes(mux, dependencies.HealthHandler)
+
+	// Register device monitoring routes.
+	v1.RegisterRoutes(mux, dependencies.DeviceHandler)
 
 	return mux
 }

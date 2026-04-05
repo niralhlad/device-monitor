@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/niralhlad/device-monitor/internal/handlers"
+	"github.com/niralhlad/device-monitor/internal/constants"
 )
 
 /*
@@ -16,5 +17,5 @@ func registerHealthRoutes(mux *http.ServeMux, healthHandler *handlers.HealthHand
 	}
 
 	// Register lightweight health routes used by local runs and container platforms.
-	mux.HandleFunc("GET /health" , healthHandler.HandleLive)
+	mux.HandleFunc("GET "+constants.HealthBasePath, healthHandler.HandleLive)
 }

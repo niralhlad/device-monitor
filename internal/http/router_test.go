@@ -9,6 +9,8 @@ import (
 
 	appconfig "github.com/niralhlad/device-monitor/internal/config"
 	"github.com/niralhlad/device-monitor/internal/handlers"
+	"github.com/niralhlad/device-monitor/internal/registry"
+	"github.com/niralhlad/device-monitor/internal/services"
 )
 
 /*
@@ -35,6 +37,9 @@ func TestNewRouter_RegistersHealthRoute(t *testing.T) {
 		Settings:      appconfig.DefaultSettings(),
 		Logger:        testLogger(),
 		HealthHandler: handlers.NewHealthHandler("device-monitor", "test"),
+		DeviceHandler: handlers.NewDeviceHandler(
+			services.NewDeviceService(registry.NewForTest([]string{"device-1"})),
+		),
 	})
 
 	// Create a test request for the health endpoint.
@@ -90,6 +95,26 @@ func TestNewRouter_PanicsWhenLoggerIsNil(t *testing.T) {
 	// Attempt to build the router without a logger.
 	_ = NewRouter(Dependencies{
 		Settings:      appconfig.DefaultSettings(),
+		HealthHandler: handlers.NewHealthHandler("device-monitor", "test"),
+	})
+}
+
+/*
+TestNewRouter_PanicsWhenDeviceHandlerIsNil verifies that NewRouter fails fast
+when the device handler dependency is missing.
+*/
+func TestNewRouter_PanicsWhenDeviceHandlerIsNil(t *testing.T) {
+	// Recover the expected panic triggered by the missing dependency.
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic, got nil")
+		}
+	}()
+
+	// Attempt to build the router without a device handler.
+	_ = NewRouter(Dependencies{
+		Settings:      appconfig.DefaultSettings(),
+		Logger:        testLogger(),
 		HealthHandler: handlers.NewHealthHandler("device-monitor", "test"),
 	})
 }

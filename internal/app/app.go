@@ -11,6 +11,7 @@ import (
 	"github.com/niralhlad/device-monitor/internal/handlers"
 	internalhttp "github.com/niralhlad/device-monitor/internal/http"
 	"github.com/niralhlad/device-monitor/internal/registry"
+	"github.com/niralhlad/device-monitor/internal/services"
 )
 
 /*
@@ -61,11 +62,16 @@ func Load() (*Application, error) {
 	// Create the HTTP handlers used by the API routes.
 	healthHandler := handlers.NewHealthHandler(settings.ServiceName, settings.Environment)
 
+	// Create the device service and handler for telemetry ingestion.
+	deviceService := services.NewDeviceService(deviceRegistry)
+	deviceHandler := handlers.NewDeviceHandler(deviceService)
+
 	// Register the router and return the top-level HTTP handler.
 	router := internalhttp.NewRouter(internalhttp.Dependencies{
 		Settings:      settings,
 		Logger:        logger,
 		HealthHandler: healthHandler,
+		DeviceHandler: deviceHandler,
 	})
 
 	// Return the fully constructed application.

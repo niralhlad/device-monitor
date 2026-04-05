@@ -4,15 +4,18 @@ A small Go HTTP service that loads device IDs from `devices.csv`, accepts heartb
 ## High-level design
 
 - `cmd/server/main.go` bootstraps the application and handles graceful shutdown.
-- `internal/config` wires config, repository, services, handlers, and routes.
+- `internal/app` wires config, logger, registry, handlers, and routes.
+- `internal/config` loads and validates environment-based configuration.
 - `internal/handlers` owns HTTP decoding, validation, and response shaping.
-- `internal/services` owns business rules.
-- `internal/registry` owns in-memory persistence and CSV loading.
-- `internal/http` registers versioned routes for `v1` and other version when required.
+- `internal/services` owns business rules and in-memory device state.
+- `internal/registry` loads valid device IDs from CSV at startup.
+- `internal/http` registers versioned routes for `v1`.
 
-## Supported Endpoint
+## Supported Endpoints
 
 - `GET /health` : Get the health status of the server.
+- `POST /api/v1/devices/{device_id}/heartbeat` : Register a heartbeat for a known device.
+- `GET /api/v1/devices/{device_id}/stats` : Return current device uptime statistics.
 
 ## Local run
 
