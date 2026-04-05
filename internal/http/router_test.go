@@ -144,3 +144,59 @@ func TestRegisterHealthRoutes_NoPanicOnNilInputs(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusNotFound)
 	}
 }
+
+/*
+TestNewRouter_HealthRouteStillWorksWithMiddleware verifies that the router
+still serves requests correctly after request logging and recovery middleware
+are applied.
+*/
+func TestNewRouter_HealthRouteStillWorksWithMiddleware(t *testing.T) {
+	// Build a router with all required dependencies.
+	router := NewRouter(Dependencies{
+		Settings: appconfig.DefaultSettings(),
+		Logger:   testLogger(),
+		HealthHandler: handlers.NewHealthHandler(
+			"device-monitor",
+			"test",
+		),
+		DeviceHandler: handlers.NewDeviceHandler(
+			services.NewDeviceService(registry.NewForTest([]string{"device-1"})),
+		),
+	})
+
+	// Create a request to the health endpoint.
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+
+	// Execute the request against the router.
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	// Verify that middleware wrapping did not break routing.
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
+	}
+}
+
+/*
+TestWithRecovery_ReturnsInternalServerErrorOnPanic verifies that the recovery
+middleware catches panics and returns HTTP 500.
+*/
+func TestWithRecovery_ReturnsInternalServerErrorOnPanic(t *testing.T) {
+	// Build a handler that always panics.
+	panicHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		panic("boom")
+	})
+
+	// Wrap the panic handler with recovery middleware.
+	handler := withRecovery(testLogger(), panicHandler)
+
+	// Execute a request against the recovered handler.
+	req := httptest.NewRequest(http.MethodGet, "/panic", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	// Verify that the panic was converted into HTTP 500.
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
+	}
+}

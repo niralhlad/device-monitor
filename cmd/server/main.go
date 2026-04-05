@@ -64,7 +64,10 @@ func main() {
 		}
 	}()
 
-	logger.Info("server starting", "port", application.Settings.HTTPPort)
+	logger.Info(
+		"server starting", 
+		"URL", "http://localhost" + application.Settings.Address(),
+	)
 
 	// Start serving traffic and treat unexpected server failures as fatal.
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

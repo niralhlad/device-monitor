@@ -44,5 +44,12 @@ func NewRouter(dependencies Dependencies) stdhttp.Handler {
 	// Register device monitoring routes.
 	v1.RegisterRoutes(mux, dependencies.DeviceHandler)
 
-	return mux
+	// Wrap the router with recovery first so panics are handled safely.
+	handler := withRecovery(dependencies.Logger, mux)
+
+	// Wrap the recovered handler with request logging.
+	handler = withRequestLogging(dependencies.Logger, handler)
+
+	// Return the final HTTP handler chain.
+	return handler
 }
