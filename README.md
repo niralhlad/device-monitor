@@ -10,6 +10,10 @@ A small Go HTTP service that loads device IDs from `devices.csv`, accepts heartb
 - `internal/registry` owns in-memory persistence and CSV loading.
 - `internal/http` registers versioned routes for `v1` and other version when required.
 
+## Supported Endpoint
+
+- `GET /health` : Get the health status of the server.
+
 ## Local run
 
 Start the API Server:

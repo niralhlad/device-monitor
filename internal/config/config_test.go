@@ -37,6 +37,9 @@ func TestDefaultSettings(t *testing.T) {
 	if s.LogFormat != "json" {
 		t.Fatalf("LogFormat = %q, want %q", s.LogFormat, "json")
 	}
+	if s.DevicesCSVPath != "data/devices.csv" {
+		t.Fatalf("DevicesCSVPath = %q, want %q", s.DevicesCSVPath, "data/devices.csv")
+	}
 }
 
 /*
@@ -49,6 +52,8 @@ does not provide an environment source.
 func TestLoadFromEnv_UsesDefaultsWhenLookupIsNil(t *testing.T) {
 	// Load settings without providing an environment lookup function.
 	s := LoadFromEnv(nil)
+
+	// Compare the result to the defaults.
 	defaults := DefaultSettings()
 
 	// Confirm that the loaded settings match the defaults exactly.
@@ -66,19 +71,35 @@ The test confirms that all provided values override the defaults correctly.
 func TestLoadFromEnv_OverridesOnlyProvidedValues(t *testing.T) {
 	// Build a test environment with explicit overrides.
 	env := map[string]string{
-		"SERVICE_NAME": "fleet-api",
-		"ENVIRONMENT":  "production",
-		"HTTP_PORT":    "8080",
-		"LOG_LEVEL":    "debug",
-		"LOG_FORMAT":   "text",
+		"SERVICE_NAME": 	"fleet-api",
+		"ENVIRONMENT":      "production",
+		"HTTP_PORT":        "8080",
+		"LOG_LEVEL":        "debug",
+		"LOG_FORMAT":       "text",
+		"DEVICES_CSV_PATH": "/tmp/devices.csv",
 	}
 
 	// Load settings from the test environment.
 	s := LoadFromEnv(func(key string) string { return env[key] })
 
-	// Verify that all provided values replaced the defaults.
-	if s.ServiceName != "fleet-api" || s.Environment != "production" || s.HTTPPort != "8080" || s.LogLevel != "debug" || s.LogFormat != "text" {
-		t.Fatalf("unexpected settings: %+v", s)
+	// Verify that all provided values override the defaults.
+	if s.ServiceName != "fleet-api" {
+		t.Fatalf("ServiceName = %q, want %q", s.ServiceName, "fleet-api")
+	}
+	if s.Environment != "production" {
+		t.Fatalf("Environment = %q, want %q", s.Environment, "production")
+	}
+	if s.HTTPPort != "8080" {
+		t.Fatalf("HTTPPort = %q, want %q", s.HTTPPort, "8080")
+	}
+	if s.LogLevel != "debug" {
+		t.Fatalf("LogLevel = %q, want %q", s.LogLevel, "debug")
+	}
+	if s.LogFormat != "text" {
+		t.Fatalf("LogFormat = %q, want %q", s.LogFormat, "text")
+	}
+	if s.DevicesCSVPath != "/tmp/devices.csv" {
+		t.Fatalf("DevicesCSVPath = %q, want %q", s.DevicesCSVPath, "/tmp/devices.csv")
 	}
 }
 
@@ -92,12 +113,15 @@ in empty configuration values.
 func TestLoadFromEnv_IgnoresBlankValues(t *testing.T) {
 	// Build a test environment with blank values.
 	env := map[string]string{
-		"SERVICE_NAME": "   ",
-		"HTTP_PORT":    "",
+		"SERVICE_NAME":     "   ",
+		"HTTP_PORT":        "",
+		"DEVICES_CSV_PATH": "   ",
 	}
 
 	// Load settings from the test environment.
 	s := LoadFromEnv(func(key string) string { return env[key] })
+
+	// Compare the result to the defaults for the blank fields.
 	defaults := DefaultSettings()
 
 	// Confirm that the default service name is preserved.
@@ -108,6 +132,9 @@ func TestLoadFromEnv_IgnoresBlankValues(t *testing.T) {
 	// Confirm that the default HTTP port is preserved.
 	if s.HTTPPort != defaults.HTTPPort {
 		t.Fatalf("HTTPPort = %q, want default %q", s.HTTPPort, defaults.HTTPPort)
+	}
+	if s.DevicesCSVPath != defaults.DevicesCSVPath {
+		t.Fatalf("DevicesCSVPath = %q, want default %q", s.DevicesCSVPath, defaults.DevicesCSVPath)
 	}
 }
 
@@ -121,17 +148,19 @@ and out-of-range port values.
 func TestSettingsValidate(t *testing.T) {
 	// Define validation scenarios for the HTTP port.
 	tests := []struct {
-		name    string
-		port    string
-		wantErr bool
+		name           string
+		port           string
+		devicesCSVPath string
+		wantErr        bool
 	}{
-		{name: "valid default port", port: "6733", wantErr: false},
-		{name: "empty port", port: "", wantErr: true},
-		{name: "whitespace port", port: "   ", wantErr: true},
-		{name: "non numeric", port: "abc", wantErr: true},
-		{name: "zero", port: "0", wantErr: true},
-		{name: "negative", port: "-1", wantErr: true},
-		{name: "too large", port: "70000", wantErr: true},
+		{name: "valid default settings", port: "6733", devicesCSVPath: "data/devices.csv", wantErr: false},
+		{name: "empty port", port: "", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "whitespace port", port: "   ", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "non numeric port", port: "abc", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "zero port", port: "0", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "negative port", port: "-1", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "too large port", port: "70000", devicesCSVPath: "data/devices.csv", wantErr: true},
+		{name: "empty csv path", port: "6733", devicesCSVPath: "", wantErr: true},
 	}
 
 	// Execute each validation test case independently.
@@ -140,6 +169,7 @@ func TestSettingsValidate(t *testing.T) {
 			// Start from default settings and override the port under test.
 			s := DefaultSettings()
 			s.HTTPPort = tt.port
+			s.DevicesCSVPath = tt.devicesCSVPath
 
 			// Validate the settings.
 			err := s.Validate()

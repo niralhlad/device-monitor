@@ -19,6 +19,7 @@ type Settings struct {
 	HTTPPort    string
 	LogLevel    string
 	LogFormat   string
+	DevicesCSVPath string
 }
 
 /*
@@ -35,6 +36,7 @@ func DefaultSettings() Settings {
 		HTTPPort:    "6733",
 		LogLevel:    "info",
 		LogFormat:   "json",
+		DevicesCSVPath: "data/devices.csv",
 	}
 }
 
@@ -59,6 +61,7 @@ func LoadFromEnv(lookup func(string) string) Settings {
 	settings.HTTPPort = FallbackString(lookup("HTTP_PORT"), settings.HTTPPort)
 	settings.LogLevel = FallbackString(lookup("LOG_LEVEL"), settings.LogLevel)
 	settings.LogFormat = FallbackString(lookup("LOG_FORMAT"), settings.LogFormat)
+	settings.DevicesCSVPath = FallbackString(lookup("DEVICES_CSV_PATH"), settings.DevicesCSVPath)
 
 	// Return the merged runtime settings.
 	return settings
@@ -80,6 +83,11 @@ func (s Settings) Validate() error {
 	port, err := strconv.Atoi(s.HTTPPort)
 	if err != nil || port <= 0 || port > 65535 {
 		return fmt.Errorf("HTTP_PORT must be between 1 and 65535")
+	}
+
+	// Ensure the devices CSV path is set.
+	if strings.TrimSpace(s.DevicesCSVPath) == "" {
+		return errors.New("DEVICES_CSV_PATH cannot be empty")
 	}
 
 	// Return nil when all configuration checks pass.

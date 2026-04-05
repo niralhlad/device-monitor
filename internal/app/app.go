@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"fmt"
 
 	appconfig "github.com/niralhlad/device-monitor/internal/config"
 	"github.com/niralhlad/device-monitor/internal/handlers"
 	internalhttp "github.com/niralhlad/device-monitor/internal/http"
+	"github.com/niralhlad/device-monitor/internal/registry"
 )
 
 /*
@@ -21,6 +23,7 @@ type Application struct {
 	Settings appconfig.Settings
 	Logger   *slog.Logger
 	Handler  http.Handler
+	DeviceRegistry *registry.Registry
 }
 
 /*
@@ -41,6 +44,20 @@ func Load() (*Application, error) {
 	// Create the application logger used across the service.
 	logger := newLogger(settings)
 
+	// Load valid device definitions from the configured CSV file.
+	deviceRegistry, err := registry.LoadRegistryFromCSV(settings.DevicesCSVPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load device registry from CSV: %w", err)
+	}
+
+	// Log the number of valid devices discovered during startup.
+	logger.Info(
+		"device definitions loaded",
+		"path", settings.DevicesCSVPath,
+		"count", deviceRegistry.Count(),
+	)
+
+
 	// Create the HTTP handlers used by the API routes.
 	healthHandler := handlers.NewHealthHandler(settings.ServiceName, settings.Environment)
 
@@ -56,6 +73,7 @@ func Load() (*Application, error) {
 		Settings: settings,
 		Logger:   logger,
 		Handler:  router,
+		DeviceRegistry: deviceRegistry,
 	}, nil
 }
 
