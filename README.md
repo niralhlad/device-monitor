@@ -27,6 +27,7 @@ device-monitor
 ├── README.md
 ├── go.mod
 ├── results.txt                     # simulator output from a successful run
+├── WRITEUP.md                      # challenge write-up
 ```
 
 ## API summary
@@ -225,8 +226,6 @@ make simulator
 
 The simulator will send device data to the service, query the stats endpoint for each device, and generate a `results.txt` file in the project root.
 
-This repository includes a `results.txt` file from a successful simulator run for reference.
-
 ## Example curl commands
 
 Heartbeat:
@@ -250,3 +249,9 @@ Read stats:
 ```bash
 curl -s http://localhost:6733/api/v1/devices/60-6b-44-84-dc-64/stats
 ```
+
+## Submission artifacts
+
+This repository includes:
+- `results.txt` containing the simulator output
+- `WRITEUP.md` containing implementation notes, trade-offs, assumptions, and challenge answers
